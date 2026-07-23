@@ -1,8 +1,11 @@
 package com.cdac.onlineTiffinService.model;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,8 +13,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -68,4 +70,10 @@ public class User {
 	@Column(nullable = false, updatable = false,name="created_at")
 	
 	private LocalDateTime createdAt;
+	
+	@OneToMany(mappedBy = "customer") // here dont need to have cascade cause customer does not own orders 
+	@ToString.Exclude
+	private List<Orders> orders = new ArrayList<>();
+	
+	
 }

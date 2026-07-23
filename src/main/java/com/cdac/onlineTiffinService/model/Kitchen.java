@@ -49,7 +49,7 @@ public class Kitchen {
 	private String description;
 
 	@Column(nullable = false,name="average_rating")
-	private double averageRating = 0.0;
+	private Double averageRating = 0.0;
 
 	@Column(nullable = false)
 	private int ratingCount = 0;
@@ -68,7 +68,10 @@ public class Kitchen {
 				cascade=CascadeType.ALL, // if parent get affected , it will affect the child too...
 				orphanRemoval = true // remove relation so delete the child
 				)
-	private List<MenuItem> manuItems = new ArrayList<>();
+	private List<MenuItem> menuItems = new ArrayList<>();
+	
+	@OneToMany(mappedBy = "kitchen") // here we dont want to have to use cascade cause kitchen does not own orders
+	private List<Orders> orders = new ArrayList<>();
 	
 	
 	

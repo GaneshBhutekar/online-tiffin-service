@@ -1,5 +1,5 @@
 package com.cdac.onlineTiffinService.model;
 
-public enum Role {
-	CUSTOMER,KITCHEN,ADMIN
+public enum PaymentStatus {
+	PENDING , PAID
 }

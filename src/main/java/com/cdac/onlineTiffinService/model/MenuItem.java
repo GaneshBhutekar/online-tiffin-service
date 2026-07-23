@@ -49,7 +49,14 @@ public class MenuItem {
 	private FoodCategory foodCategory;
 
 	@Column(nullable = false)
-	private boolean available;
+	private boolean available = true;
+	
+	
+	@Column(length = 300)
+	private String description;
+	
+	@Column(name = "image_url" , length = 500)
+	private String imageUrl;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "kitchen_id", nullable = false)
