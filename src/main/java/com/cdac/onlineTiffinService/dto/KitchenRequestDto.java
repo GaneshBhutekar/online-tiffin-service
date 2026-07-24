@@ -1,5 +1,6 @@
 package com.cdac.onlineTiffinService.dto;
 
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -29,6 +30,8 @@ public class KitchenRequestDto {
 	
 	@Size(max = 300, message = "Description cannot exceed 300 characters")
 	private String description;
+	
+	
 
 	
 }
