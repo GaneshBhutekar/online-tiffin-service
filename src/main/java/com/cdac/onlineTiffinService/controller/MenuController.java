@@ -144,5 +144,5 @@ public class MenuController {
 	            menuService.getAllMenuItems();
 
 	    return ResponseEntity.ok(response);
-	}
+	}	
 }

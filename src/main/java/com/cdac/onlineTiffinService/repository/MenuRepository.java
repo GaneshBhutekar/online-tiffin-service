@@ -2,6 +2,7 @@ package com.cdac.onlineTiffinService.repository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -17,4 +18,6 @@ public interface MenuRepository extends JpaRepository<MenuItem, Long>{
 	List<MenuItem> findByPriceBetweenAndAvailableTrue(
 	        BigDecimal minPrice,
 	        BigDecimal maxPrice);
+	
+	Optional<MenuItem> findByIdAndAvailableTrue(Long id);
 }

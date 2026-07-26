@@ -43,7 +43,6 @@ public class Orders {
     
     
     @CreationTimestamp
-    @NotNull(message = "Order date is required")
     @Column(name = "order_date", nullable = false)
     private LocalDateTime orderDate;
 
