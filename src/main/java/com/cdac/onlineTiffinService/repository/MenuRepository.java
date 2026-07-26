@@ -1,9 +1,20 @@
 package com.cdac.onlineTiffinService.repository;
 
+import java.math.BigDecimal;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.cdac.onlineTiffinService.model.MenuItem;
 
 public interface MenuRepository extends JpaRepository<MenuItem, Long>{
-
+	List<MenuItem> findByKitchenId(Long kitchenId); // menuitem.kitchen.id
+	
+	List<MenuItem> findByKitchenIdAndAvailableTrue(Long kitchenId);
+	
+	List<MenuItem> findByDishNameContainingIgnoreCase(String keyword);
+	List<MenuItem> findByDishNameContainingIgnoreCaseAndAvailableTrue(String keyword);
+	List<MenuItem> findByPriceBetweenAndAvailableTrue(
+	        BigDecimal minPrice,
+	        BigDecimal maxPrice);
 }
