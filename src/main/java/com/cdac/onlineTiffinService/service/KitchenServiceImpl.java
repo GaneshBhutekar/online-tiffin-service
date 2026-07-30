@@ -3,6 +3,7 @@ package com.cdac.onlineTiffinService.service;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.cdac.onlineTiffinService.dto.KitchenResponseDto;
@@ -11,6 +12,7 @@ import com.cdac.onlineTiffinService.dto.UserKitchenRegistrationResponseDto;
 import com.cdac.onlineTiffinService.dto.UserResponseDto;
 import com.cdac.onlineTiffinService.exceptions.ResourceNotFoundException;
 import com.cdac.onlineTiffinService.model.Kitchen;
+import com.cdac.onlineTiffinService.model.Role;
 import com.cdac.onlineTiffinService.model.User;
 import com.cdac.onlineTiffinService.repository.KitchenRepository;
 import com.cdac.onlineTiffinService.repository.UserRepository;
@@ -29,12 +31,18 @@ public class KitchenServiceImpl implements KitchenService{
 	
 	private final ModelMapper modelMapper;
 	
+	private final PasswordEncoder passwordEncoder;
+	
 	
 	@Override
 	public UserKitchenRegistrationResponseDto createKitchen(UserKitchenRegistrationRequestDto req) {
 		User user = modelMapper.map(req.getUser(),User.class);
 		Kitchen kitchen = modelMapper.map(req.getKitchen(), Kitchen.class);
 		
+		// encode raw password before persisting so BCrypt-based login works
+		user.setPassword(passwordEncoder.encode(req.getUser().getPassword()));
+		// force KITCHEN role for owners registered through this endpoint
+		user.setRole(Role.KITCHEN);
 		
 		// copy all from the dto gtter and use setter of kitchen to create Ktchen object , now we have to save it to the database
 		User savedUser = userRepository.save(user);
@@ -81,7 +89,7 @@ public class KitchenServiceImpl implements KitchenService{
 		user.setName(req.getUser().getName());
 		user.setCity(req.getUser().getCity());
 		user.setEmail(req.getUser().getEmail());
-		user.setPassword(req.getUser().getPassword());
+		user.setPassword(passwordEncoder.encode(req.getUser().getPassword()));
 		user.setPhoneNumber(req.getUser().getPhoneNumber());
 		
 		
