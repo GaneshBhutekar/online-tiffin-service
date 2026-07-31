@@ -7,10 +7,13 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import com.cdac.onlineTiffinService.model.MenuItem;
 
-public interface MenuRepository extends JpaRepository<MenuItem, Long>{
+public interface MenuRepository extends
+JpaRepository<MenuItem,Long>,
+JpaSpecificationExecutor<MenuItem>{
 //	List<MenuItem> findByKitchenId(Long kitchenId); // menuitem.kitchen.id
 	Page<MenuItem> findByKitchenId(Long kitchenId,Pageable pageable);
 	

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cdac.onlineTiffinService.dto.MenuAvailabilityDto;
 import com.cdac.onlineTiffinService.dto.MenuRequestDto;
 import com.cdac.onlineTiffinService.dto.MenuResponseDto;
+import com.cdac.onlineTiffinService.model.FoodCategory;
 import com.cdac.onlineTiffinService.service.MenuService;
 
 import jakarta.validation.Valid;
@@ -44,21 +45,60 @@ public class MenuController {
 	    return new ResponseEntity<>(response, HttpStatus.CREATED); //201
 	}
 	
+//	@GetMapping("/kitchen/{kitchenId}")
+//	public ResponseEntity<Page<MenuResponseDto>>
+//	getMenuItemsByKitchen(
+//	        @PathVariable Long kitchenId,
+//	        @RequestParam(defaultValue = "0") int page,
+//	        @RequestParam(defaultValue = "10") int size
+//	        
+//			
+//			) {
+//
+//	    Page<MenuResponseDto> response =
+//	            menuService.getMenuItemsByKitchen(kitchenId,page,size);
+//
+//	    return ResponseEntity.ok(response);
+//	}
+	
 	@GetMapping("/kitchen/{kitchenId}")
-	public ResponseEntity<Page<MenuResponseDto>>
-	getMenuItemsByKitchen(
-	        @PathVariable Long kitchenId,
-	        @RequestParam(defaultValue = "0") int page,
-	        @RequestParam(defaultValue = "10") int size
-	        
-			
-			) {
+	public ResponseEntity<Page<MenuResponseDto>> getMenuItemsByKitchen(
 
-	    Page<MenuResponseDto> response =
-	            menuService.getMenuItemsByKitchen(kitchenId,page,size);
+	        @PathVariable Long kitchenId,
+
+	        @RequestParam(defaultValue = "0") int page,
+
+	        @RequestParam(defaultValue = "10") int size,
+
+	        @RequestParam(required = false) FoodCategory category,
+
+	        @RequestParam(required = false) Boolean available,
+
+	        @RequestParam(required = false) BigDecimal minPrice,
+
+	        @RequestParam(required = false) BigDecimal maxPrice,
+
+	        @RequestParam(defaultValue = "dishName") String sortBy,
+
+	        @RequestParam(defaultValue = "asc") String direction
+	){
+
+		Page<MenuResponseDto> response =
+	            menuService.getMenuItemsByKitchen(
+	                    kitchenId,
+	                    page,
+	                    size,
+	                    category,
+	                    available,
+	                    minPrice,
+	                    maxPrice,
+	                    sortBy,
+	                    direction
+	            );
 
 	    return ResponseEntity.ok(response);
 	}
+	
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<MenuResponseDto> getMenuItemById(

@@ -8,6 +8,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.domain.PageRequest;
 
 import com.cdac.onlineTiffinService.dto.MenuAvailabilityDto;
@@ -15,10 +17,12 @@ import com.cdac.onlineTiffinService.dto.MenuRequestDto;
 import com.cdac.onlineTiffinService.dto.MenuResponseDto;
 import com.cdac.onlineTiffinService.exceptions.ForbiddenException;
 import com.cdac.onlineTiffinService.exceptions.ResourceNotFoundException;
+import com.cdac.onlineTiffinService.model.FoodCategory;
 import com.cdac.onlineTiffinService.model.Kitchen;
 import com.cdac.onlineTiffinService.model.MenuItem;
 import com.cdac.onlineTiffinService.repository.KitchenRepository;
 import com.cdac.onlineTiffinService.repository.MenuRepository;
+import com.cdac.onlineTiffinService.specification.MenuSpecification;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -80,57 +84,117 @@ public class MenuServiceImpl implements MenuService{
 		
 		return response; 
 	}
-	@Override
-	public Page<MenuResponseDto> getMenuItemsByKitchen(Long kitchenId,int page,int size) {
-
-	    // Check whether kitchen exists
-	    Kitchen kitchen = kitchenRepository.findById(kitchenId)
-	            .orElseThrow(() ->
-	                    new ResourceNotFoundException(
-	                            "Kitchen",
-	                            "id",
-	                            kitchenId));
-
-	    Pageable pageable = PageRequest.of(page, size);
-	    // Fetch all menu items of that kitchen
-	    Page<MenuItem> menuItems =
-	            menuRepository.findByKitchenId(kitchen.getId(),pageable);
-
-	    // Convert Entity List -> DTO List
-//	    return menuItems.stream()
-//	            .map(menu -> {
+//	@Override
+//	public Page<MenuResponseDto> getMenuItemsByKitchen(Long kitchenId,int page,int size) {
 //
-//	                MenuResponseDto response =
-//	                        modelMapper.map(menu,
-//	                                MenuResponseDto.class);
+//	    // Check whether kitchen exists
+//	    Kitchen kitchen = kitchenRepository.findById(kitchenId)
+//	            .orElseThrow(() ->
+//	                    new ResourceNotFoundException(
+//	                            "Kitchen",
+//	                            "id",
+//	                            kitchenId));
 //
-//	                response.setKitchenId(
-//	                        menu.getKitchen().getId());
+//	    Pageable pageable = PageRequest.of(page, size);
+//	    // Fetch all menu items of that kitchen
+//	    Page<MenuItem> menuItems =
+//	            menuRepository.findByKitchenId(kitchen.getId(),pageable);
 //
-//	                response.setKitchenName(
-//	                        menu.getKitchen().getKitchenName());
+//	    // Convert Entity List -> DTO List
+////	    return menuItems.stream()
+////	            .map(menu -> {
+////
+////	                MenuResponseDto response =
+////	                        modelMapper.map(menu,
+////	                                MenuResponseDto.class);
+////
+////	                response.setKitchenId(
+////	                        menu.getKitchen().getId());
+////
+////	                response.setKitchenName(
+////	                        menu.getKitchen().getKitchenName());
+////
+////	                return response;
+////
+////	            })
+////	            .toList();
+//	    
+//	    return menuItems.map(menu -> {
 //
-//	                return response;
+//	        MenuResponseDto response =
+//	                modelMapper.map(
+//	                        menu,
+//	                        MenuResponseDto.class);
 //
-//	            })
-//	            .toList();
-	    
-	    return menuItems.map(menu -> {
+//	        response.setKitchenId(
+//	                menu.getKitchen().getId());
+//
+//	        response.setKitchenName(
+//	                menu.getKitchen().getKitchenName());
+//
+//	        return response;
+//	    });
+//	}
+	
+    @Override
+    public Page<MenuResponseDto> getMenuItemsByKitchen(
 
-	        MenuResponseDto response =
-	                modelMapper.map(
-	                        menu,
-	                        MenuResponseDto.class);
+            Long kitchenId,
 
-	        response.setKitchenId(
-	                menu.getKitchen().getId());
+            int page,
 
-	        response.setKitchenName(
-	                menu.getKitchen().getKitchenName());
+            int size,
 
-	        return response;
-	    });
-	}
+            FoodCategory category,
+
+            Boolean available,
+
+            BigDecimal minPrice,
+
+            BigDecimal maxPrice,
+
+            String sortBy,
+
+            String direction
+
+    ) {
+    	Kitchen kitchen = kitchenRepository.findById(kitchenId)
+    	        .orElseThrow(() ->
+    	                new ResourceNotFoundException(
+    	                        "Kitchen","id",kitchenId
+    	                ));
+
+        Sort sort = direction.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Specification<MenuItem> specification =
+                MenuSpecification.filter(
+                        kitchenId,
+                        category,
+                        available,
+                        minPrice,
+                        maxPrice
+                );
+
+        Page<MenuItem> menuPage =
+                menuRepository.findAll(specification, pageable);
+
+        return menuPage.map(menu -> {
+
+            MenuResponseDto dto =
+                    modelMapper.map(menu, MenuResponseDto.class);
+
+            dto.setKitchenId(menu.getKitchen().getId());
+
+            dto.setKitchenName(menu.getKitchen().getKitchenName());
+
+            return dto;
+        });
+
+    }
 	@Override
 	public MenuResponseDto getMenuItemById(Long id) {
 		
