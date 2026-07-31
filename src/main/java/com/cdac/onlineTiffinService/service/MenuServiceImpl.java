@@ -6,6 +6,9 @@ import java.util.List;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 
 import com.cdac.onlineTiffinService.dto.MenuAvailabilityDto;
 import com.cdac.onlineTiffinService.dto.MenuRequestDto;
@@ -78,7 +81,7 @@ public class MenuServiceImpl implements MenuService{
 		return response; 
 	}
 	@Override
-	public List<MenuResponseDto> getMenuItemsByKitchen(Long kitchenId) {
+	public Page<MenuResponseDto> getMenuItemsByKitchen(Long kitchenId,int page,int size) {
 
 	    // Check whether kitchen exists
 	    Kitchen kitchen = kitchenRepository.findById(kitchenId)
@@ -88,28 +91,45 @@ public class MenuServiceImpl implements MenuService{
 	                            "id",
 	                            kitchenId));
 
+	    Pageable pageable = PageRequest.of(page, size);
 	    // Fetch all menu items of that kitchen
-	    List<MenuItem> menuItems =
-	            menuRepository.findByKitchenId(kitchen.getId());
+	    Page<MenuItem> menuItems =
+	            menuRepository.findByKitchenId(kitchen.getId(),pageable);
 
 	    // Convert Entity List -> DTO List
-	    return menuItems.stream()
-	            .map(menu -> {
+//	    return menuItems.stream()
+//	            .map(menu -> {
+//
+//	                MenuResponseDto response =
+//	                        modelMapper.map(menu,
+//	                                MenuResponseDto.class);
+//
+//	                response.setKitchenId(
+//	                        menu.getKitchen().getId());
+//
+//	                response.setKitchenName(
+//	                        menu.getKitchen().getKitchenName());
+//
+//	                return response;
+//
+//	            })
+//	            .toList();
+	    
+	    return menuItems.map(menu -> {
 
-	                MenuResponseDto response =
-	                        modelMapper.map(menu,
-	                                MenuResponseDto.class);
+	        MenuResponseDto response =
+	                modelMapper.map(
+	                        menu,
+	                        MenuResponseDto.class);
 
-	                response.setKitchenId(
-	                        menu.getKitchen().getId());
+	        response.setKitchenId(
+	                menu.getKitchen().getId());
 
-	                response.setKitchenName(
-	                        menu.getKitchen().getKitchenName());
+	        response.setKitchenName(
+	                menu.getKitchen().getKitchenName());
 
-	                return response;
-
-	            })
-	            .toList();
+	        return response;
+	    });
 	}
 	@Override
 	public MenuResponseDto getMenuItemById(Long id) {

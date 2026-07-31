@@ -3,6 +3,7 @@ package com.cdac.onlineTiffinService.controller;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -44,12 +45,17 @@ public class MenuController {
 	}
 	
 	@GetMapping("/kitchen/{kitchenId}")
-	public ResponseEntity<List<MenuResponseDto>>
+	public ResponseEntity<Page<MenuResponseDto>>
 	getMenuItemsByKitchen(
-	        @PathVariable Long kitchenId) {
+	        @PathVariable Long kitchenId,
+	        @RequestParam(defaultValue = "0") int page,
+	        @RequestParam(defaultValue = "10") int size
+	        
+			
+			) {
 
-	    List<MenuResponseDto> response =
-	            menuService.getMenuItemsByKitchen(kitchenId);
+	    Page<MenuResponseDto> response =
+	            menuService.getMenuItemsByKitchen(kitchenId,page,size);
 
 	    return ResponseEntity.ok(response);
 	}
@@ -86,6 +92,20 @@ public class MenuController {
 	    return ResponseEntity.ok("Menu Item deleted successfully.");
 	}
 	
+	
+	
+	/*
+	 @GetMapping("/kitchen/{kitchenId}/available")
+	public ResponseEntity<List<MenuResponseDto>>
+	getAvailableMenuItems(
+	        @PathVariable Long kitchenId) {
+
+	    List<MenuResponseDto> response =
+	            menuService.getAvailableMenuItems(kitchenId);
+
+	    return ResponseEntity.ok(response);
+	} 
+	 */
 	@GetMapping("/kitchen/{kitchenId}/available")
 	public ResponseEntity<List<MenuResponseDto>>
 	getAvailableMenuItems(

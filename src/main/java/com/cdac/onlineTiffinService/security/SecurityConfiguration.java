@@ -49,17 +49,17 @@ public class SecurityConfiguration {
 		// ---------- Kitchens: literal/specific paths first ----------
 		.requestMatchers(HttpMethod.POST,"/api/kitchens").permitAll() //owner self-registration
 		.requestMatchers(HttpMethod.GET,"/api/kitchens/notactive").hasRole("ADMIN")
-		.requestMatchers(HttpMethod.GET,"/api/kitchens/active").permitAll()
-		.requestMatchers(HttpMethod.GET,"/api/kitchens/city/{city}").permitAll()
+		.requestMatchers(HttpMethod.GET,"/api/kitchens/active").permitAll()  // pagination DONE
+		.requestMatchers(HttpMethod.GET,"/api/kitchens/city/{city}").permitAll() // pagination DONE
 		.requestMatchers(HttpMethod.PUT,"/api/kitchens/{id}/block","/api/kitchens/{id}/unblock").hasRole("ADMIN") // tested
-		.requestMatchers(HttpMethod.GET,"/api/kitchens").permitAll()
+		.requestMatchers(HttpMethod.GET,"/api/kitchens").permitAll()  // pagination DONE
 		.requestMatchers(HttpMethod.GET,"/api/kitchens/{id}").permitAll() //generic - must come after the literal ones above
 		.requestMatchers(HttpMethod.PUT,"/api/kitchens/{id}").hasAnyRole("KITCHEN","ADMIN")
 		.requestMatchers(HttpMethod.DELETE,"/api/kitchens/{id}").hasAnyRole("KITCHEN","ADMIN")
 
 		// ---------- Menu: literal/specific paths first ----------
-		.requestMatchers(HttpMethod.GET,"/api/menu/kitchen/{kitchenId}/available").permitAll()
-		.requestMatchers(HttpMethod.GET,"/api/menu/kitchen/{kitchenId}").permitAll()
+		.requestMatchers(HttpMethod.GET,"/api/menu/kitchen/{kitchenId}/available").permitAll() // pagination NOT DONE
+		.requestMatchers(HttpMethod.GET,"/api/menu/kitchen/{kitchenId}").permitAll() // pagination DONE
 		.requestMatchers(HttpMethod.POST,"/api/menu/kitchen/{kitchenId}").hasRole("KITCHEN")
 		.requestMatchers(HttpMethod.GET,"/api/menu/customer/search").permitAll()
 		.requestMatchers(HttpMethod.GET,"/api/menu/admin").hasRole("ADMIN")

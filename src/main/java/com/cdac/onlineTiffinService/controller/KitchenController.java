@@ -2,6 +2,7 @@ package com.cdac.onlineTiffinService.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cdac.onlineTiffinService.dto.KitchenResponseDto;
@@ -36,12 +38,25 @@ public class KitchenController {
 		
 				
 	}
-	
+	/*
 	@GetMapping
 	public ResponseEntity<?> getAllKitchens(){
 		List<KitchenResponseDto> kitchens = kitchenService.getAllKitchens();
 		return ResponseEntity.ok(kitchens); // 200
 	}
+	*/
+	
+	@GetMapping
+	public ResponseEntity<?> getAllKitchens(
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size
+			
+			){
+		Page<KitchenResponseDto> kitchens = kitchenService.getAllKitchens(page,size);
+		return ResponseEntity.ok(kitchens); // 200
+	}
+	
+	
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<?> getKitchenById(@PathVariable Long id){
@@ -61,15 +76,41 @@ public class KitchenController {
 		return ResponseEntity.ok("Kitchen deleted successfully !!");
 	}
 	
-	@GetMapping("/city/{city}")
+	/*
+	 
+	  @GetMapping("/city/{city}")
 	public ResponseEntity<?> getKitchenByCity(@PathVariable String city){
 		return ResponseEntity.ok(kitchenService.getKitchenByCity(city));
 		
 	}
+	  
+	 */
 	
+	@GetMapping("/city/{city}")
+	public ResponseEntity<?> getKitchenByCity(
+			@PathVariable String city,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size
+			){
+		return ResponseEntity.ok(kitchenService.getKitchenByCity(city,page,size));
+		
+	}
+	
+	
+	
+	/*
 	@GetMapping("/active")
 	public ResponseEntity<?> getAllActiveKitchens(){
 		return ResponseEntity.ok(kitchenService.getKitchenByActive());
+	}
+	*/
+	@GetMapping("/active")
+	public ResponseEntity<?> getAllActiveKitchens(
+			
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size
+			){
+		return ResponseEntity.ok(kitchenService.getKitchenByActive(page , size));
 	}
 	
 	@GetMapping("/notactive")

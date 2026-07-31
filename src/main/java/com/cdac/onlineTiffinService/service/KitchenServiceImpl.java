@@ -7,6 +7,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+
 import com.cdac.onlineTiffinService.dto.KitchenResponseDto;
 import com.cdac.onlineTiffinService.dto.UserKitchenRegistrationRequestDto;
 import com.cdac.onlineTiffinService.dto.UserKitchenRegistrationResponseDto;
@@ -83,7 +87,7 @@ public class KitchenServiceImpl implements KitchenService{
 		
 	}
 	
-	
+	/*
 	@Override
 	public List<KitchenResponseDto> getAllKitchens(){
 		List<Kitchen> Kitchens = kitchenRepository.findAll();
@@ -92,6 +96,26 @@ public class KitchenServiceImpl implements KitchenService{
 		
 		return Kitchens.stream().map(kit -> modelMapper.map(kit, KitchenResponseDto.class)).toList();
 	
+	}
+	*/
+	
+	// after pagination
+	
+	@Override
+	public Page<KitchenResponseDto> getAllKitchens(int page,int size){
+		
+		Pageable pageable = PageRequest.of(page, size);
+		Page<Kitchen> kitchens = kitchenRepository.findAll(pageable);
+		// instead of copy pasting the kitchen data to kitchenResponse by loop we will use map a stream functioin
+		
+		
+//		return Kitchens.stream().map(kit -> modelMapper.map(kit, KitchenResponseDto.class)).toList();
+		
+		// dont need stream cause page already have map function in it , so dont need to stream
+		return kitchens.map(
+	            kitchen ->
+	                    modelMapper.map(kitchen,
+	                            KitchenResponseDto.class));
 	}
 	
 	@Override
@@ -144,20 +168,58 @@ public class KitchenServiceImpl implements KitchenService{
 		kitchenRepository.delete(kitchen);
 	}
 	
-	@Override
+	
+	/*
+	 
+	 
+	 @Override
 	public List<KitchenResponseDto> getKitchenByCity(String city){
 		List<Kitchen> kitchens = kitchenRepository.findBykitchenCity(city);
 		
 		return kitchens.stream().map(kit -> modelMapper.map(kit, KitchenResponseDto.class)).toList();
 	}
+	 
+	 */
+	@Override
+	public Page<KitchenResponseDto> getKitchenByCity(String city,int page , int size){
+		
+		Pageable pageable = PageRequest.of(page, size);
+		
+		
+		Page<Kitchen> kitchens = kitchenRepository.findBykitchenCity(city,pageable);
+		
+//		return kitchens.stream().map(kit -> modelMapper.map(kit, KitchenResponseDto.class)).toList();
+		return kitchens.map(kit ->
+        modelMapper.map(
+                kit,
+                KitchenResponseDto.class));
+	}
 
-
+	
+	/*
 	@Override
 	public List<KitchenResponseDto> getKitchenByActive() {
 		// TODO Auto-generated method stub
 		List<Kitchen> kitchens = kitchenRepository.findByBlockedFalse();
 		
 		return kitchens.stream().map(kit-> modelMapper.map(kit, KitchenResponseDto.class)).toList();
+		
+	}
+	
+	*/
+	
+	@Override
+	public Page<KitchenResponseDto> getKitchenByActive(int page , int size) {
+		// TODO Auto-generated method stub
+		
+		Pageable pageable = PageRequest.of(page, size);
+		Page<Kitchen> kitchens = kitchenRepository.findByBlockedFalse(pageable);
+		
+//		return kitchens.stream().map(kit-> modelMapper.map(kit, KitchenResponseDto.class)).toList();
+		return kitchens.map(
+	            kit -> modelMapper.map(
+	                    kit,
+	                    KitchenResponseDto.class));
 		
 	}
 	@Override
