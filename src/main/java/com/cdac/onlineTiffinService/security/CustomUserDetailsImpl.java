@@ -22,7 +22,7 @@ public class CustomUserDetailsImpl implements UserDetails {
 		 *  - instance of SimpleGrantedAuthority(String roleName)
 		 *  - SimpleGrantedAuthority implements GrantedAuthority
 		 */
-		return List.of(new SimpleGrantedAuthority(user.getRole().name()));
+		return List.of(new SimpleGrantedAuthority("ROLE_"+user.getRole().name()));
 	}
 
 	@Override

@@ -52,7 +52,7 @@ public class CustomJWTVerificationFilter extends OncePerRequestFilter {
 				 * Collection<GrantedAuthority> authorities)
 				 */
 				UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userId, null,
-						List.of(new SimpleGrantedAuthority(userRole)));
+						List.of(new SimpleGrantedAuthority("ROLE_" + userRole)));
 				/*
 				 * Save this auth object under security context
 				 */
