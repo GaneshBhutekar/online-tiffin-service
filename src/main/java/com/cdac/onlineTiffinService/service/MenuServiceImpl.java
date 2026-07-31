@@ -4,11 +4,13 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.cdac.onlineTiffinService.dto.MenuAvailabilityDto;
 import com.cdac.onlineTiffinService.dto.MenuRequestDto;
 import com.cdac.onlineTiffinService.dto.MenuResponseDto;
+import com.cdac.onlineTiffinService.exceptions.ForbiddenException;
 import com.cdac.onlineTiffinService.exceptions.ResourceNotFoundException;
 import com.cdac.onlineTiffinService.model.Kitchen;
 import com.cdac.onlineTiffinService.model.MenuItem;
@@ -28,6 +30,25 @@ public class MenuServiceImpl implements MenuService{
 	
 	private final ModelMapper modelMapper;
 
+	// The JWT filter stores the logged-in user's id as the Authentication principal
+	// (see CustomJWTVerificationFilter). We use that to verify ownership below -
+	// role checks alone (hasRole("KITCHEN")) only prove someone owns *a* kitchen,
+	// not that they own *this* kitchen / menu item.
+	private Long getCurrentUserId() {
+		return (Long) SecurityContextHolder.getContext()
+				.getAuthentication()
+				.getPrincipal();
+	}
+
+	private void verifyKitchenOwnership(Kitchen kitchen) {
+		Long currentUserId = getCurrentUserId();
+		if (kitchen.getOwner() == null
+				|| !kitchen.getOwner().getId().equals(currentUserId)) {
+			throw new ForbiddenException(
+					"You are not authorized to modify this kitchen's menu.");
+		}
+	}
+
 	@Override
 	public MenuResponseDto addMenuItem(Long kitchenId, MenuRequestDto dto) {
 		Kitchen kitchen =
@@ -37,6 +58,9 @@ public class MenuServiceImpl implements MenuService{
 		                "Kitchen",
 		                "id",
 		                kitchenId));
+
+		verifyKitchenOwnership(kitchen);
+
 		// converting dto to entity
 		
 		MenuItem menu = modelMapper.map(dto, MenuItem.class);
@@ -120,6 +144,8 @@ public class MenuServiceImpl implements MenuService{
 	                            "id",
 	                            id));
 
+	    verifyKitchenOwnership(menuItem.getKitchen());
+
 	    menuItem.setDishName(requestDto.getDishName());
 	    menuItem.setPrice(requestDto.getPrice());
 	    menuItem.setFoodCategory(requestDto.getFoodCategory());
@@ -142,6 +168,8 @@ public class MenuServiceImpl implements MenuService{
 	                            "Menu Item",
 	                            "id",
 	                            id));
+
+	    verifyKitchenOwnership(menuItem.getKitchen());
 
 	    menuRepository.delete(menuItem);
 	}
@@ -181,6 +209,8 @@ public class MenuServiceImpl implements MenuService{
 	                            "Menu Item",
 	                            "id",
 	                            id));
+
+	    verifyKitchenOwnership(menuItem.getKitchen());
 
 	    menuItem.setAvailable(dto.isAvailable());
 

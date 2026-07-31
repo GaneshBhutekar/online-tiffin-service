@@ -44,14 +44,14 @@ public class SecurityConfiguration {
 		request
 		// ---------- Swagger & Auth (PUBLIC) ----------
 		.requestMatchers("/swagger-ui/**","/v3/api-docs/**").permitAll()
-		.requestMatchers(HttpMethod.POST,"/users/signin","/users/signup").permitAll()
+		.requestMatchers(HttpMethod.POST,"/users/signin","/users/signup").permitAll() //tested
 
 		// ---------- Kitchens: literal/specific paths first ----------
 		.requestMatchers(HttpMethod.POST,"/api/kitchens").permitAll() //owner self-registration
 		.requestMatchers(HttpMethod.GET,"/api/kitchens/notactive").hasRole("ADMIN")
 		.requestMatchers(HttpMethod.GET,"/api/kitchens/active").permitAll()
 		.requestMatchers(HttpMethod.GET,"/api/kitchens/city/{city}").permitAll()
-		.requestMatchers(HttpMethod.PUT,"/api/kitchens/{id}/block","/api/kitchens/{id}/unblock").hasRole("ADMIN")
+		.requestMatchers(HttpMethod.PUT,"/api/kitchens/{id}/block","/api/kitchens/{id}/unblock").hasRole("ADMIN") // tested
 		.requestMatchers(HttpMethod.GET,"/api/kitchens").permitAll()
 		.requestMatchers(HttpMethod.GET,"/api/kitchens/{id}").permitAll() //generic - must come after the literal ones above
 		.requestMatchers(HttpMethod.PUT,"/api/kitchens/{id}").hasAnyRole("KITCHEN","ADMIN")

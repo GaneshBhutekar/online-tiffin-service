@@ -45,6 +45,21 @@ public class GlobalExceptionHandler {
        
     }
 	
+	@ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ApiError> handleForbidden(
+            ForbiddenException ex,
+            HttpServletRequest request) {
+
+        ApiError error = new ApiError(
+                LocalDateTime.now(),
+                HttpStatus.FORBIDDEN.value(),
+                HttpStatus.FORBIDDEN.name(),
+                ex.getMessage(),
+                request.getRequestURI());
+
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN); //403
+    }
+
 	@ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ApiError> handleBadRequest(
             BadRequestException ex,

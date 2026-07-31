@@ -3,6 +3,7 @@ package com.cdac.onlineTiffinService.service;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +11,7 @@ import com.cdac.onlineTiffinService.dto.KitchenResponseDto;
 import com.cdac.onlineTiffinService.dto.UserKitchenRegistrationRequestDto;
 import com.cdac.onlineTiffinService.dto.UserKitchenRegistrationResponseDto;
 import com.cdac.onlineTiffinService.dto.UserResponseDto;
+import com.cdac.onlineTiffinService.exceptions.ForbiddenException;
 import com.cdac.onlineTiffinService.exceptions.ResourceNotFoundException;
 import com.cdac.onlineTiffinService.model.Kitchen;
 import com.cdac.onlineTiffinService.model.Role;
@@ -32,8 +34,29 @@ public class KitchenServiceImpl implements KitchenService{
 	private final ModelMapper modelMapper;
 	
 	private final PasswordEncoder passwordEncoder;
-	
-	
+
+	// Mirrors MenuServiceImpl: the JWT filter stores the logged-in user's id as the
+	// Authentication principal. hasAnyRole("KITCHEN","ADMIN") alone only proves the
+	// caller owns *some* kitchen, not that they own *this* one - so we check here too.
+	private void verifyKitchenOwnership(Kitchen kitchen) {
+		Long currentUserId = (Long) SecurityContextHolder.getContext()
+				.getAuthentication()
+				.getPrincipal();
+		boolean isAdmin = SecurityContextHolder.getContext()
+				.getAuthentication()
+				.getAuthorities()
+				.stream()
+				.anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+		if (!isAdmin
+				&& (kitchen.getOwner() == null
+					|| !kitchen.getOwner().getId().equals(currentUserId))) {
+			throw new ForbiddenException(
+					"You are not authorized to modify this kitchen.");
+		}
+	}
+
+
 	@Override
 	public UserKitchenRegistrationResponseDto createKitchen(UserKitchenRegistrationRequestDto req) {
 		User user = modelMapper.map(req.getUser(),User.class);
@@ -81,6 +104,7 @@ public class KitchenServiceImpl implements KitchenService{
 	@Override
 	public UserKitchenRegistrationResponseDto updateKitchen(Long id, UserKitchenRegistrationRequestDto req) {
 		Kitchen kitchen = kitchenRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("Kitchen", "id", id));
+		verifyKitchenOwnership(kitchen);
 		Long owner_id = kitchen.getOwner().getId();
 		
 		User user = userRepository.findById(owner_id).orElseThrow(()->new ResourceNotFoundException("User", "id", owner_id));
@@ -112,6 +136,7 @@ public class KitchenServiceImpl implements KitchenService{
 	@Override
 	public void deleteKitchen(Long id) {
 		Kitchen kitchen = kitchenRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("Kitchen", "id", id));
+		verifyKitchenOwnership(kitchen);
 		// delete this kitchen
 		
 		
