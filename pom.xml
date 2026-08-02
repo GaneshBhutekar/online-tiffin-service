@@ -67,8 +67,14 @@
 		
 		
 		
-		
-		
+		<!--this is senderGrid dependency-->
+		<!-- Source: https://mvnrepository.com/artifact/com.sendgrid/sendgrid-java -->
+		<dependency>
+		    <groupId>com.sendgrid</groupId>
+		    <artifactId>sendgrid-java</artifactId>
+		    <version>4.10.3</version>
+		    <scope>compile</scope>
+		</dependency>		
 		
 		
 		<dependency>

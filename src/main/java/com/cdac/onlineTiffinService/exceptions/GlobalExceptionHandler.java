@@ -75,6 +75,22 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST); //400
     }
 	
+	@ExceptionHandler(MyIOException.class)
+	public ResponseEntity<ApiError> handleMyIOException(
+	        MyIOException ex,
+	        HttpServletRequest request) {
+
+	    ApiError error = new ApiError(
+	            LocalDateTime.now(),
+	            HttpStatus.INTERNAL_SERVER_ERROR.value(),
+	            HttpStatus.INTERNAL_SERVER_ERROR.name(),
+	            ex.getMessage(),
+	            request.getRequestURI());
+
+	    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+	}
+	
+	
 	@ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGenericException(
             Exception ex,

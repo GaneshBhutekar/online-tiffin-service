@@ -32,6 +32,7 @@ public class UserServiceImpl implements UserService {
 	private final PasswordEncoder encoder;
 	private final AuthenticationManager authManager;
 	private final JwtUtils jwtUtils;
+	private final EmailService emailService;
 
 	@Override
 	public AuthResp authenticateUser(AuthRequest request) {
@@ -82,6 +83,22 @@ public class UserServiceImpl implements UserService {
 		user.setPassword(encoder.encode(request.getPassword()));
 
 		User savedUser = userRepo.save(user);
+		
+		try {
+			emailService.sendEmail(
+					savedUser.getEmail(),
+					"Welcome to Online Tiffin Service!",
+					"Hi " + savedUser.getName() + ",\n\n"
+							+ "Your customer account has been registered successfully with Online Tiffin Service.\n"
+							+ "You can now browse kitchens and start placing orders.\n\n"
+							+ "Thanks,\nOnline Tiffin Service Team"
+			);
+		} catch (Exception e) {
+			// do not fail registration if email sending fails
+			System.err.println("Failed to send registration email: " + e.getMessage());
+		}
+		
+		
 		return mapper.map(savedUser, UserResponseDto.class);
 	}
 

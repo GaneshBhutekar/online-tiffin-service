@@ -38,6 +38,8 @@ public class KitchenServiceImpl implements KitchenService{
 	private final ModelMapper modelMapper;
 	
 	private final PasswordEncoder passwordEncoder;
+	
+	private final EmailService emailService;
 
 	// Mirrors MenuServiceImpl: the JWT filter stores the logged-in user's id as the
 	// Authentication principal. hasAnyRole("KITCHEN","ADMIN") alone only proves the
@@ -81,7 +83,20 @@ public class KitchenServiceImpl implements KitchenService{
 		
 		
 		// now in response we will do 
-		
+		try {
+			emailService.sendEmail(
+					savedUser.getEmail(),
+					"Your Kitchen Has Been Registered!",
+					"Hi " + savedUser.getName() + ",\n\n"
+							+ "Your kitchen \"" + savedKitchen.getKitchenName() + "\" has been registered successfully "
+							+ "on Online Tiffin Service.\n"
+							+ "You can now add menu items and start receiving orders.\n\n"
+							+ "Thanks,\nOnline Tiffin Service Team"
+			);
+		} catch (Exception e) {
+			// do not fail kitchen registration if email sending fails
+			System.err.println("Failed to send kitchen registration email: " + e.getMessage());
+		}
 		
 		return response;
 		

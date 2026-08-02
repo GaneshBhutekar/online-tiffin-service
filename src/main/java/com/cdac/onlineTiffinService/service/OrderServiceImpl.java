@@ -44,7 +44,41 @@ public class OrderServiceImpl  implements OrderService{
 
     private final MenuRepository menuRepository;
 
+    private final EmailService emailService;
+
 //    private ModelMapper modelMapper;
+
+    // sends an order-status notification email to both the customer and the kitchen owner
+    private void notifyCustomerAndKitchen(Orders order, String subjectPrefix, String extraMessage) {
+        try {
+            String customerEmail = order.getCustomer().getEmail();
+            String customerName = order.getCustomer().getName();
+            String kitchenOwnerEmail = order.getKitchen().getOwner().getEmail();
+            String kitchenOwnerName = order.getKitchen().getOwner().getName();
+            String kitchenName = order.getKitchen().getKitchenName();
+
+            emailService.sendEmail(
+                    customerEmail,
+                    subjectPrefix + " - Order #" + order.getId(),
+                    "Hi " + customerName + ",\n\n"
+                            + "Your order #" + order.getId() + " from \"" + kitchenName + "\" " + extraMessage + "\n\n"
+                            + "Total: Rs. " + order.getTotalPrice() + "\n\n"
+                            + "Thanks,\nOnline Tiffin Service Team"
+            );
+
+            emailService.sendEmail(
+                    kitchenOwnerEmail,
+                    subjectPrefix + " - Order #" + order.getId(),
+                    "Hi " + kitchenOwnerName + ",\n\n"
+                            + "Order #" + order.getId() + " placed by " + customerName + " " + extraMessage + "\n\n"
+                            + "Total: Rs. " + order.getTotalPrice() + "\n\n"
+                            + "Thanks,\nOnline Tiffin Service Team"
+            );
+        } catch (Exception e) {
+            // never let an email failure roll back the order status change
+            System.err.println("Failed to send order notification email: " + e.getMessage());
+        }
+    }
     
     @Override
     public OrderResponseDto placeOrder(Long customerId,PlaceOrderRequestDto request) {
@@ -178,6 +212,9 @@ public class OrderServiceImpl  implements OrderService{
 
         Orders updatedOrder = orderRepository.save(order);
 
+        notifyCustomerAndKitchen(updatedOrder, "Order Cancelled",
+                "has been cancelled.");
+
         return mapToResponse(updatedOrder);
     }
     
@@ -239,6 +276,9 @@ public class OrderServiceImpl  implements OrderService{
 
         Orders updatedOrder = orderRepository.save(order);
 
+        notifyCustomerAndKitchen(updatedOrder, "Order Cancelled",
+                "has been rejected by the kitchen and cancelled.");
+
         return mapToResponse(updatedOrder);
     }
     
@@ -295,6 +335,9 @@ public class OrderServiceImpl  implements OrderService{
         order.setStatus(Status.DELIVERED);
 
         Orders updatedOrder = orderRepository.save(order);
+
+        notifyCustomerAndKitchen(updatedOrder, "Order Delivered",
+                "has been delivered successfully.");
 
         return mapToResponse(updatedOrder);
     }
