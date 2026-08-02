@@ -39,6 +39,14 @@ public class User {
 	@NotBlank(message = "Name is required")
 	@Column(nullable = false, length = 100)
 	private String name;
+	
+	
+	// for forget password
+	@Column(name = "reset_otp", length = 6)
+	private String resetOtp;
+
+	@Column(name = "reset_otp_expiry")
+	private LocalDateTime resetOtpExpiry;
 
 	@NotBlank(message = "Email is required")
 	@Email(message = "Invalid email format")

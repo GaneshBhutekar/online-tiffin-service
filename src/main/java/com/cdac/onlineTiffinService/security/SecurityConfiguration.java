@@ -44,7 +44,8 @@ public class SecurityConfiguration {
 		request
 		// ---------- Swagger & Auth (PUBLIC) ----------
 		.requestMatchers("/swagger-ui/**","/v3/api-docs/**").permitAll()
-		.requestMatchers(HttpMethod.POST,"/users/signin","/users/signup").permitAll() //tested
+		.requestMatchers(HttpMethod.POST,"/users/signin","/users/signup","/users/forgot-password",
+		        "/users/reset-password").permitAll() //tested
 
 		// ---------- Kitchens: literal/specific paths first ----------
 		.requestMatchers(HttpMethod.POST,"/api/kitchens").permitAll() //owner self-registration

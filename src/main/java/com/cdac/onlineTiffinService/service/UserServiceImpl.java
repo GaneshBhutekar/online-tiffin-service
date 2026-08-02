@@ -23,6 +23,15 @@ import com.cdac.onlineTiffinService.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+
+import com.cdac.onlineTiffinService.dto.ForgotPasswordRequest;
+import com.cdac.onlineTiffinService.dto.ResetPasswordRequest;
+
+import com.cdac.onlineTiffinService.exceptions.BadRequestException;
+import com.cdac.onlineTiffinService.exceptions.ResourceNotFoundException;
+
 @Slf4j
 @Service
 @Transactional
@@ -35,6 +44,7 @@ public class UserServiceImpl implements UserService {
 	private final AuthenticationManager authManager;
 	private final JwtUtils jwtUtils;
 	private final EmailService emailService;
+	private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
 	@Override
 	public AuthResp authenticateUser(AuthRequest request) {
@@ -106,5 +116,93 @@ public class UserServiceImpl implements UserService {
 		
 		return mapper.map(savedUser, UserResponseDto.class);
 	}
+	
+	@Override
+	public ApiResponse forgotPassword(ForgotPasswordRequest request) {
+
+	    log.info("Password reset OTP requested for email: {}", request.getEmail());
+
+	    User user = userRepo.findByEmail(request.getEmail())
+	            .orElseThrow(() ->
+	                    new ResourceNotFoundException(
+	                            "User",
+	                            "email",
+	                            request.getEmail()
+	                    )
+	            );
+
+	    String otp = String.valueOf(
+	            100000 + SECURE_RANDOM.nextInt(900000)
+	    );
+
+	    user.setResetOtp(otp);
+	    user.setResetOtpExpiry(LocalDateTime.now().plusMinutes(10));
+
+	    userRepo.save(user);
+
+	    emailService.sendEmail(
+	            user.getEmail(),
+	            "Online Tiffin Service Password Reset OTP",
+	            "Hi " + user.getName() + ",\n\n"
+	                    + "Your password reset OTP is: " + otp + "\n\n"
+	                    + "This OTP is valid for 10 minutes.\n"
+	                    + "Do not share this OTP with anyone.\n\n"
+	                    + "Thanks,\n"
+	                    + "Online Tiffin Service Team"
+	    );
+
+	    log.info("Password reset OTP sent successfully to: {}", user.getEmail());
+
+	    return new ApiResponse(
+	            "Password reset OTP sent successfully",
+	            "Success"
+	    );
+	}
+	
+	@Override
+	public ApiResponse resetPassword(ResetPasswordRequest request) {
+
+	    log.info("Password reset attempt for email: {}", request.getEmail());
+
+	    User user = userRepo.findByEmail(request.getEmail())
+	            .orElseThrow(() ->
+	                    new ResourceNotFoundException(
+	                            "User",
+	                            "email",
+	                            request.getEmail()
+	                    )
+	            );
+
+	    if (user.getResetOtp() == null
+	            || !user.getResetOtp().equals(request.getOtp())) {
+
+	        throw new BadRequestException("Invalid OTP");
+	    }
+
+	    if (user.getResetOtpExpiry() == null
+	            || LocalDateTime.now().isAfter(user.getResetOtpExpiry())) {
+
+	        throw new BadRequestException(
+	                "OTP has expired. Please request a new OTP"
+	        );
+	    }
+
+	    user.setPassword(
+	            encoder.encode(request.getNewPassword())
+	    );
+
+	    user.setResetOtp(null);
+	    user.setResetOtpExpiry(null);
+
+	    userRepo.save(user);
+
+	    log.info("Password reset successfully for email: {}", user.getEmail());
+
+	    return new ApiResponse(
+	            "Password reset successfully",
+	            "Success"
+	    );
+	}
+	
 
 }

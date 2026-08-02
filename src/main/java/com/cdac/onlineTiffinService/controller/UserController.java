@@ -17,6 +17,10 @@ import com.cdac.onlineTiffinService.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import com.cdac.onlineTiffinService.dto.ApiResponse;
+import com.cdac.onlineTiffinService.dto.ForgotPasswordRequest;
+import com.cdac.onlineTiffinService.dto.ResetPasswordRequest;
+
 @RestController // @Controller - cls level + @ResponseBody - added implicitly on
 //ret types of all request handling method
 @RequestMapping("/users")
@@ -59,5 +63,25 @@ public class UserController {
 		UserResponseDto response = userService.registerCustomer(request);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
+	
+	@PostMapping("/forgot-password")
+	public ResponseEntity<ApiResponse> forgotPassword(
+	        @RequestBody @Valid ForgotPasswordRequest request) {
+
+	    ApiResponse response = userService.forgotPassword(request);
+
+	    return ResponseEntity.ok(response);
+	}
+	@PostMapping("/reset-password")
+	public ResponseEntity<ApiResponse> resetPassword(
+	        @RequestBody @Valid ResetPasswordRequest request) {
+
+	    ApiResponse response = userService.resetPassword(request);
+
+	    return ResponseEntity.ok(response);
+	}
+	
+	
+	
 }
 
