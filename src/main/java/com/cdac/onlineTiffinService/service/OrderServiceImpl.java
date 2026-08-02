@@ -28,7 +28,9 @@ import com.cdac.onlineTiffinService.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -82,6 +84,7 @@ public class OrderServiceImpl  implements OrderService{
     
     @Override
     public OrderResponseDto placeOrder(Long customerId,PlaceOrderRequestDto request) {
+    	log.info("Placing order for customerId={}, kitchenId={}", customerId, request.getKitchenId());
     	User customer = userRepository.findById(customerId)
     	        .orElseThrow(() ->
     	                new ResourceNotFoundException("User", "Id", customerId));
@@ -144,6 +147,8 @@ public class OrderServiceImpl  implements OrderService{
         order.setKitchenAmount(totalPrice - commission);
         
         Orders savedOrder = orderRepository.save(order);
+        log.info("Order placed successfully: orderId={}, customerId={}, totalPrice={}",
+                savedOrder.getId(), customerId, totalPrice);
         
 //        return modelMapper.map(savedOrder, OrderResponseDto.class); // too many problems mistmatches between this both
         
@@ -190,6 +195,8 @@ public class OrderServiceImpl  implements OrderService{
     @Override
     public OrderResponseDto cancelOrder(Long orderId) {
 
+        log.info("Cancelling orderId={}", orderId);
+
         Orders order = orderRepository.findById(orderId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Order", "Id", orderId));
@@ -198,12 +205,14 @@ public class OrderServiceImpl  implements OrderService{
             order.getStatus() == Status.READY ||
             order.getStatus() == Status.DELIVERED) {
 
+            log.warn("Cannot cancel orderId={}, current status={}", orderId, order.getStatus());
             throw new BadRequestException(
                     "Order cannot be cancelled once preparation has started.");
         }
 
         if (order.getStatus() == Status.CANCELLED) {
 
+            log.warn("orderId={} is already cancelled", orderId);
             throw new BadRequestException(
                     "Order is already cancelled.");
         }
@@ -211,6 +220,7 @@ public class OrderServiceImpl  implements OrderService{
         order.setStatus(Status.CANCELLED);
 
         Orders updatedOrder = orderRepository.save(order);
+        log.info("Order cancelled successfully: orderId={}", orderId);
 
         notifyCustomerAndKitchen(updatedOrder, "Order Cancelled",
                 "has been cancelled.");

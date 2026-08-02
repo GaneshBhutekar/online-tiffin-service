@@ -12,12 +12,15 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 	@ExceptionHandler(ResourceNotFoundException.class)
 	public ResponseEntity<ApiError> handleResourceNotFound(ResourceNotFoundException e , HttpServletRequest req)
 	{
+		log.warn("Resource not found at [{}]: {}", req.getRequestURI(), e.getMessage());
 		ApiError error = new ApiError(
 				LocalDateTime.now(),
 				HttpStatus.NOT_FOUND.value(),
@@ -33,6 +36,7 @@ public class GlobalExceptionHandler {
             DuplicateResourceException ex,
             HttpServletRequest request) {
 
+        log.warn("Duplicate resource at [{}]: {}", request.getRequestURI(), ex.getMessage());
         ApiError error = new ApiError(
                 LocalDateTime.now(),
                 HttpStatus.CONFLICT.value(),
@@ -50,6 +54,7 @@ public class GlobalExceptionHandler {
             ForbiddenException ex,
             HttpServletRequest request) {
 
+        log.warn("Forbidden access attempt at [{}]: {}", request.getRequestURI(), ex.getMessage());
         ApiError error = new ApiError(
                 LocalDateTime.now(),
                 HttpStatus.FORBIDDEN.value(),
@@ -65,6 +70,7 @@ public class GlobalExceptionHandler {
             BadRequestException ex,
             HttpServletRequest request) {
 
+        log.warn("Bad request at [{}]: {}", request.getRequestURI(), ex.getMessage());
         ApiError error = new ApiError(
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
@@ -80,6 +86,7 @@ public class GlobalExceptionHandler {
 	        MyIOException ex,
 	        HttpServletRequest request) {
 
+	    log.error("IO error while processing [{}]", request.getRequestURI(), ex);
 	    ApiError error = new ApiError(
 	            LocalDateTime.now(),
 	            HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -96,6 +103,7 @@ public class GlobalExceptionHandler {
             Exception ex,
             HttpServletRequest request) {
 
+        log.error("Unhandled exception while processing [{}]", request.getRequestURI(), ex);
         ApiError error = new ApiError(
                 LocalDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -119,6 +127,7 @@ public class GlobalExceptionHandler {
                 .forEach(error ->
                         errors.put(error.getField(), error.getDefaultMessage()));
 
+        log.warn("Validation failed: {}", errors);
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
@@ -128,6 +137,7 @@ public class GlobalExceptionHandler {
             ConstraintViolationException ex,
             HttpServletRequest request) {
 
+        log.warn("Constraint violation at [{}]: {}", request.getRequestURI(), ex.getMessage());
         ApiError error = new ApiError(
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),

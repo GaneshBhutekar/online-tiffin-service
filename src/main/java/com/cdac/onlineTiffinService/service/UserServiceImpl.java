@@ -21,7 +21,9 @@ import com.cdac.onlineTiffinService.security.CustomUserDetailsImpl;
 import com.cdac.onlineTiffinService.security.JwtUtils;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -44,24 +46,24 @@ public class UserServiceImpl implements UserService {
 		 * credentials) 1.1 - Create UserNamePasswordAuthenticationToken , to hold email
 		 * & password
 		 */
+		log.info("Login attempt for email: {}", request.getEmail());
 		UsernamePasswordAuthenticationToken holder = new UsernamePasswordAuthenticationToken(request.getEmail(),
 				request.getPassword());
-		System.out.println("before " + holder.isAuthenticated());// false
+		log.debug("Authentication token created, authenticated={}", holder.isAuthenticated());// false
 		/*
 		 * 1.2 call authenticate method - in case of failure Spring security throws
 		 * AuthenticationException - un checked exception
 		 */
 		Authentication fullyAutheticatedDetails = authManager.authenticate(holder);
 		// => authentication successful
-		System.out.println("after  " + fullyAutheticatedDetails.isAuthenticated());// t
-		System.out.println(fullyAutheticatedDetails.getPrincipal());// custom user details
+		log.debug("Authentication result, authenticated={}", fullyAutheticatedDetails.isAuthenticated());// t
 		CustomUserDetailsImpl userDetails = (CustomUserDetailsImpl) fullyAutheticatedDetails.getPrincipal();
 
 		/*
 		 * 1.3 In case of successful authentication - create JWT & send it in auth
 		 * response.
 		 */
-
+		log.info("Login successful for email: {}", request.getEmail());
 		return new AuthResp("Login Successful !", jwtUtils.generateJwt(userDetails));
 	}
 
@@ -74,7 +76,9 @@ public class UserServiceImpl implements UserService {
 	
 	@Override
 	public UserResponseDto registerCustomer(UserRequestDto request) {
+		log.info("Registering new customer with email: {}", request.getEmail());
 		userRepo.findByEmail(request.getEmail()).ifPresent(u -> {
+			log.warn("Registration failed - email already exists: {}", request.getEmail());
 			throw new DuplicateResourceException("User with this email already exists");
 		});
 
@@ -83,6 +87,7 @@ public class UserServiceImpl implements UserService {
 		user.setPassword(encoder.encode(request.getPassword()));
 
 		User savedUser = userRepo.save(user);
+		log.info("Customer registered successfully with id: {}", savedUser.getId());
 		
 		try {
 			emailService.sendEmail(
@@ -95,7 +100,7 @@ public class UserServiceImpl implements UserService {
 			);
 		} catch (Exception e) {
 			// do not fail registration if email sending fails
-			System.err.println("Failed to send registration email: " + e.getMessage());
+			log.error("Failed to send registration email to {}: {}", savedUser.getEmail(), e.getMessage(), e);
 		}
 		
 		
